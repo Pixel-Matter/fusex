@@ -12,7 +12,7 @@
 	url = ../fuse-importer
 [submodule "3rdparty/libspectrum"]
 	path = 3rdparty/libspectrum
-	url = ../libspectrum
+	url = https://github.com/speccytools/libspectrum.git
 [submodule "3rdparty/mbedtls"]
 	path = 3rdparty/mbedtls
 	url = ../fuse-mbedtls
