@@ -173,6 +173,12 @@ read_config_file( settings_info *settings )
 
   xmlDocPtr doc;
 
+#ifdef UI_UIEXT
+  /* Embedded (uiext) builds must stay deterministic: never inherit the
+     desktop Fuse configuration */
+  return 0;
+#endif
+
   cfgdir = compat_get_config_path(); if( !cfgdir ) return 1;
 
   snprintf( path, PATH_MAX, "%s/%s", cfgdir, CONFIG_FILE_NAME );
@@ -280,6 +286,12 @@ settings_write_config( settings_info *settings )
 
   xmlDocPtr doc; xmlNodePtr root;
 
+#ifdef UI_UIEXT
+  /* Embedded (uiext) builds must never overwrite the desktop Fuse
+     configuration */
+  return 0;
+#endif
+
   cfgdir = compat_get_config_path(); if( !cfgdir ) return 1;
 
   snprintf( path, PATH_MAX, "%s/%s", cfgdir, CONFIG_FILE_NAME );
@@ -339,6 +351,12 @@ read_config_file( settings_info *settings )
   int error;
 
   utils_file file;
+
+#ifdef UI_UIEXT
+  /* Embedded (uiext) builds must stay deterministic: never inherit the
+     desktop Fuse configuration */
+  return 0;
+#endif
 
   cfgdir = compat_get_config_path(); if( !cfgdir ) return 1;
 
@@ -509,6 +527,12 @@ settings_write_config( settings_info *settings )
   const char *cfgdir; char path[ PATH_MAX ];
 
   compat_fd doc;
+
+#ifdef UI_UIEXT
+  /* Embedded (uiext) builds must never overwrite the desktop Fuse
+     configuration */
+  return 0;
+#endif
 
   cfgdir = compat_get_config_path(); if( !cfgdir ) return 1;
 
