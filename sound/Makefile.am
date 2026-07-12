@@ -36,11 +36,13 @@ EXTRA_fuse_SOURCES += \
                       sound/sfifo.c \
                       sound/sunsound.c \
                       sound/wiisound.c \
-                      sound/win32sound.c
+                      sound/win32sound.c \
+                      sound/extsound.c
 
 noinst_HEADERS += \
                   sound/blipbuffer.h \
-                  sound/sfifo.h
+                  sound/sfifo.h \
+                  sound/extsound.h
 
 fuse_DEPENDENCIES += $(SOUND_LIBADD)
 fuse_LDADD += $(SOUND_LIBS) $(SOUND_LIBADD)

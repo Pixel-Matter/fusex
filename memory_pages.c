@@ -129,7 +129,7 @@ memory_init( void *context )
       page->contended = 0;
       page->source = memory_source_rom;
     }
-    
+
   for( i = 0; i < SPECTRUM_RAM_PAGES; i++ )
     for( j = 0; j < MEMORY_PAGES_IN_16K; j++ ) {
       memory_page *page = &memory_map_ram[i * MEMORY_PAGES_IN_16K + j];
@@ -464,7 +464,7 @@ memory_display_dirty_pentagon_16_col( libspectrum_word address,
      page 5 and 4 (if screen 1 is in use), and page 7 & 6 (if screen 2 is in
      use) and both the standard and ALTDFILE areas of those pages
    */
-  if( mapping->source == memory_source_ram && 
+  if( mapping->source == memory_source_ram &&
       ( ( memory_current_screen  == 5 &&
           ( mapping->page_num == 5 || mapping->page_num == 4 ) ) ||
         ( memory_current_screen  == 7 &&
@@ -487,7 +487,7 @@ memory_display_dirty_sinclair( libspectrum_word address, libspectrum_byte b ) \
 
   /* If this is a write to the current screen (and it actually changes
      the destination), redraw that bit */
-  if( mapping->source == memory_source_ram && 
+  if( mapping->source == memory_source_ram &&
       mapping->page_num == memory_current_screen &&
       ( offset2 & memory_screen_mask ) < 0x1b00 &&
       memory[ offset ] != b )
@@ -501,11 +501,11 @@ writebyte_internal( libspectrum_word address, libspectrum_byte b )
 {
   libspectrum_word bank = address >> MEMORY_PAGE_SIZE_LOGARITHM;
   memory_page *mapping = &memory_map_write[ bank ];
-  
+
   if( spectranet_paged ) {
     /* all writes need to be parsed by the flash rom emulation */
     spectranet_flash_rom_write(address, b);
-    
+
     if( spectranet_w5100_paged_a && address >= 0x1000 && address < 0x2000 ) {
       spectranet_w5100_write( mapping, address, b );
       return;
@@ -531,7 +531,7 @@ writebyte_internal( libspectrum_word address, libspectrum_byte b )
       return;
     }
   }
-  
+
   if( ttx2000s_paged ) {
     if( address >= 0x2000 && address < 0x4000 ) {
       ttx2000s_sram_write( address, b );
@@ -581,7 +581,7 @@ memory_romcs_map( void )
 
   /* FIXME: what should we do if more than one of these devices is
      active? What happen in the real situation? e.g. if1+if2 with cartridge?
-     
+
      OK. in the Interface 1 service manual: p.: 1.2 par.: 1.3.1
        All the additional software needed in IC2 (the if1 ROM). IC2 enable
        is discussed in paragraph 1.2.2 above. In addition to control from
@@ -589,11 +589,11 @@ memory_romcs_map( void )
        the (if1's) expansion connector J1. ROMCS2 from (B25), for example,
        Interface 2 connected to J1 would disable both ROM IC2 (if1 ROM) and
        the Spectrum ROM, via isolating diodes D10 and D9 respectively.
-     
+
      All comment in parenthesis added by me (Gergely Szasz).
      The ROMCS2 (B25 conn) in Interface 1 J1 edge connector is in the
      same position than ROMCS (B25 conn) in the Spectrum edge connector.
-     
+
    */
 
   module_romcs();
@@ -726,7 +726,12 @@ memory_to_snapshot( libspectrum_snap *snap )
   libspectrum_snap_set_out_plus3_memoryport( snap,
 					     machine_current->ram.last_byte2 );
 
-  for( i = 0; i < 64; i++ ) {
+  /* NOTE from ruslan.gr@gmail.com                                          */
+  /* This loop was for 64 pages, but very few machines have such many pages */
+  /* and no need to copy all 64 pages to the snapshot for rest of machines  */
+  /* And since RAM is a 2-D array now, not an array of pointers,            */
+  /* RAM[i] can never be NULL. See spectrum.c                               */
+  for( i = 0; i < machine_current->ram.valid_pages; i++ ) {
     buffer = libspectrum_new( libspectrum_byte, 0x4000 );
 
     memcpy( buffer, RAM[i], 0x4000 );

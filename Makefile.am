@@ -88,8 +88,15 @@ if COMPAT_WIN32
 settings.c: settings-win32.pl settings.dat
 	$(AM_V_GEN)$(PERL) -I$(srcdir)/perl $(srcdir)/settings-win32.pl $(srcdir)/settings.dat > $@.tmp && mv $@.tmp $@
 else
+if UI_UIEXT
+## uiext is a plain-C embedding UI; use the portable settings generator, not
+## the Objective-C/NSUserDefaults one aimed at the Cocoa app.
+settings.c: settings-win32.pl settings.dat
+	$(AM_V_GEN)$(PERL) -I$(srcdir)/perl $(srcdir)/settings-win32.pl $(srcdir)/settings.dat > $@.tmp && mv $@.tmp $@
+else
 settings.c: settings.pl settings.dat
 	$(AM_V_GEN)$(PERL) -I$(srcdir)/perl $(srcdir)/settings.pl $(srcdir)/settings.dat > $@.tmp && mv $@.tmp $@
+endif
 endif
 
 settings.h: settings-header.pl settings.dat
@@ -218,6 +225,7 @@ include ui/Makefile.am
 include ui/fb/Makefile.am
 include ui/gtk3/Makefile.am
 include ui/null/Makefile.am
+include ui/uiext/Makefile.am
 include ui/scaler/Makefile.am
 include ui/sdl/Makefile.am
 include ui/sdl2/Makefile.am

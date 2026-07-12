@@ -110,7 +110,7 @@ MENU_CALLBACK( menu_file_recording_insertsnapshot )
 MENU_CALLBACK( menu_file_recording_rollback )
 {
   libspectrum_error error;
-  
+
   if( !rzx_recording ) return;
 
   ui_widget_finish();
@@ -169,7 +169,7 @@ MENU_CALLBACK( menu_file_recording_stop )
 
   if( rzx_recording ) rzx_stop_recording();
   if( rzx_playback  ) rzx_stop_playback( 1 );
-}  
+}
 
 MENU_CALLBACK( menu_file_recording_finalise )
 {
@@ -194,7 +194,7 @@ MENU_CALLBACK( menu_file_recording_finalise )
   libspectrum_free( rzx_filename );
 
   fuse_emulation_unpause();
-}  
+}
 
 MENU_CALLBACK( menu_file_aylogging_stop )
 {
@@ -452,7 +452,7 @@ MENU_CALLBACK_WITH_ACTION( menu_media_insert_new )
 {
   int which, type;
   ui_media_drive_info_t *drive;
-  
+
   ui_widget_finish();
 
   action--;
@@ -478,7 +478,7 @@ MENU_CALLBACK_WITH_ACTION( menu_media_insert )
   char title[80];
   int which, type;
   ui_media_drive_info_t *drive = NULL;
-  
+
   action--;
   which = action & 0x0f;
   type = ( action & 0xf0 ) >> 4;
@@ -557,7 +557,7 @@ MENU_CALLBACK_WITH_ACTION( menu_media_save )
 MENU_CALLBACK_WITH_ACTION( menu_media_flip )
 {
   int which, type, flip;
-  
+
   ui_widget_finish();
 
   action--;
@@ -795,6 +795,12 @@ MENU_CALLBACK( menu_file_screenshot_savescreenaspng )
   fuse_emulation_unpause();
 }
 
+#else
+MENU_CALLBACK( menu_file_screenshot_savescreenaspng )
+{
+  ui_error( UI_ERROR_ERROR, "PNG support not compiled in" );
+}
+
 #endif
 
 #ifdef HAVE_LIB_XML2
@@ -890,7 +896,7 @@ MENU_CALLBACK( menu_file_movie_record_recordfromrzx )
 
   if( rzx_playback ) {
     fmf_file = ui_get_save_filename( "Fuse - Record Movie File" );
-    if( !fmf_file ) { 
+    if( !fmf_file ) {
       rzx_stop_playback( 1 );
       fuse_emulation_unpause();
       return;

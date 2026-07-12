@@ -31,7 +31,9 @@
 #include "debugger/debugger_internals.h"
 #include "mempool.h"
 
-#ifdef __APPLE__
+/* The Xcode build names the bison header commandy.tab.h; autotools builds
+   (which define HAVE_CONFIG_H) generate commandy.h on every platform. */
+#if defined(__APPLE__) && !defined(HAVE_CONFIG_H)
 #include "commandy.tab.h"
 #else
 #include "commandy.h"

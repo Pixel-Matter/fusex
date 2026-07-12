@@ -77,6 +77,7 @@ fi
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
 AM_PROG_CC_C_O
 AC_PATH_PROG(PERL, perl)
 AC_SUBST(PERL)
@@ -159,7 +160,7 @@ AS_IF([test "$fakeglib" = no], [
   PKG_CHECK_MODULES(
     [GLIB],
     [glib-2.0 >= 2.20.0],
-    [AC_DEFINE([HAVE_LIB_GLIB], 1, [Defined if we've got GLib])],
+    [AC_DEFINE([HAVE_LIB_GLIB], 1, [Defined if we\'ve got GLib])],
     [AC_MSG_ERROR([GLib not found, and libspectrum has no internal replacement])]
   )
 ])
@@ -179,6 +180,20 @@ AC_COMPILE_IFELSE(
 )
 CPPFLAGS="$ac_save_CPPFLAGS"
 AC_SUBST(LIBSPEC_HAVE_ZLIB)
+
+dnl Check if we need to build pybind11 wrapper instead of the program
+
+AC_ARG_WITH([pyext],
+  [AS_HELP_STRING([--with-pyext], [Build Python extension instead of the program])],
+  [case "${with_pyext}" in
+    yes) with_pyext=true ;;
+    no)  with_pyext=false ;;
+    *)   AC_MSG_ERROR([Bad value ${with_pyext} for --with-pyext]) ;;
+   esac],
+  [with_pyext=false])
+  AX_PYBIND11
+AM_CONDITIONAL([BUILD_PYEXT], [test x$with_pyext = xtrue])
+
 
 dnl Select a user interface
 
@@ -338,7 +353,7 @@ dnl Enable the SDL 1 UI if all conditions are met
 if test "$sdl_ui" = yes; then
   if test "$sdl1_available" = yes; then
     AC_DEFINE([UI_SDL], 1, [Defined if the SDL UI in use])
-    AC_DEFINE([USE_WIDGET], 1, [Defined if we're using a widget-based UI])
+    AC_DEFINE([USE_WIDGET], 1, [Defined if we are using a widget-based UI])
     UI=sdl
     WIDGET=widget
     use_sdl1=yes
@@ -361,11 +376,28 @@ if test -z "$UI"; then
   fi
 fi
 
+
+dnl Look for UIEXT library interface as fake UI (default=no)
+if test -z "$UI"; then
+  AC_MSG_CHECKING(whether UIEXT interface requested)
+  AC_ARG_WITH(uiext,
+  [  --with-uiext          use UIEXT library interface as fake UI],
+  if test "$withval" = no; then uiext_ui=no; else uiext_ui=yes; fi,
+  uiext_ui=no)
+  AC_MSG_RESULT($uiext_ui)
+  if test "$uiext_ui" = yes; then
+    AC_DEFINE([UI_UIEXT], 1, [Defined if UIEXT UI is in use])
+    AC_DEFINE([USE_WIDGET], 1, [Defined if we are using a widget-based UI])
+    UI=uiext
+    WIDGET=widget
+  fi
+fi
+
 dnl Look for GTK (default=yes)
 if test -z "$UI"; then
   AC_MSG_CHECKING(whether GTK UI requested)
   AC_ARG_WITH(gtk,
-  [  --without-gtk           don't use GTK for user interface],
+  [  --without-gtk           do\'t use GTK for user interface],
   if test "$withval" = no; then gtk=no; else gtk=yes; fi,
   if test "$fakeglib" = yes; then gtk=no; else gtk=yes; fi)
   AC_MSG_RESULT($gtk)
@@ -456,6 +488,7 @@ fi
 AM_CONDITIONAL(UI_FB, test "$UI" = fb)
 AM_CONDITIONAL(UI_GTK, test "$UI" = gtk3)
 AM_CONDITIONAL(UI_NULL, test "$UI" = null)
+AM_CONDITIONAL(UI_UIEXT, test "$UI" = uiext)
 AM_CONDITIONAL(UI_SDL, test "$UI" = sdl)
 AM_CONDITIONAL(UI_SDL2, test "$UI" = sdl2)
 AM_CONDITIONAL(UI_WII, test "$UI" = wii)
@@ -628,6 +661,11 @@ if test "$wii" = yes; then
   audio_driver_list="$audio_driver_list wii"
 fi
 
+dnl Ext sound driver
+if test x"$with_pyext" = xtrue; then
+  audio_driver_list="$audio_driver_list ext"
+fi
+
 dnl Check if pulseaudio is available (experimental)
 AC_CHECK_LIB( pulse-simple, pa_simple_new,
   [AC_CHECK_HEADER(
@@ -711,6 +749,9 @@ case $audio_driver in
     ;;
   pulseaudio)
     SOUND_LIBADD='sound/pulsesound.$(OBJEXT)' SOUND_LIBS='-lpulse-simple -lpulse'
+    ;;
+  ext)
+    SOUND_LIBADD='sound/extsound.$(OBJEXT)' SOUND_LIBS='' sound_fifo=yes
     ;;
   null)
     SOUND_LIBADD='sound/nullsound.$(OBJEXT)' SOUND_LIBS=''
